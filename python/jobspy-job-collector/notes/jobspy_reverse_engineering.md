@@ -4,7 +4,7 @@
 
 Build a Python project that collects job postings using JobSpy, inspects the returned data, and saves the results for later processing.
 
-## Current Milestone
+## Current Milestone 1
 
 We created the first working script in src/main.py.
 
@@ -44,3 +44,94 @@ The date_posted column exists, which means we can later build filters like jobs 
 
 However, the current date_posted values are date-based, not exact timestamp-based.
 
+## Milestone 2: Raw and Clean Job Output Pipeline
+
+In Milestone 2, we improved the original single-output script into a small data pipeline.
+
+The pipeline flow is:
+
+Collect jobs
+→ Save raw jobs
+→ Select useful columns
+→ Save cleaned jobs
+→ Print summary
+
+### Raw Data
+
+Raw data means the original data collected from the source before changing or reducing it.
+
+In this project, raw data is saved to:
+
+data/raw/jobs_raw.csv
+
+This file contains the full JobSpy output with all available columns.
+
+Keeping raw data is important because it allows us to reprocess the original data later if our cleaning logic changes.
+
+### Processed Data
+
+Processed data means data that has been cleaned, reduced, or transformed for easier use.
+
+In this project, processed data is saved to:
+
+data/processed/jobs_clean.csv
+
+This file keeps only the columns we currently need:
+
+- site
+- title
+- company
+- location
+- date_posted
+- job_type
+- is_remote
+- job_url
+
+### Why We Used Functions
+
+We split the script into functions so each function has one clear responsibility.
+
+Current functions:
+
+- collect_jobs()
+- save_raw_jobs()
+- clean_jobs()
+- save_clean_jobs()
+- print_summary()
+- main()
+
+This makes the code easier to read, debug, test, and improve.
+
+### Why We Used pathlib.Path
+
+We used pathlib.Path to handle file paths in a clean Python way.
+
+Example:
+
+RAW_OUTPUT_PATH = Path("data/raw/jobs_raw.csv")
+
+This makes file path handling more readable and gives useful methods like:
+
+RAW_OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
+
+That line makes sure the output folder exists before saving the CSV file.
+
+### What clean_jobs() Does
+
+The clean_jobs() function takes the full raw JobSpy DataFrame and selects only the useful columns.
+
+The raw data had 34 columns.
+
+The cleaned data keeps 8 columns.
+
+This is our first transformation step.
+
+### Why Generated CSV Files Are Ignored by Git
+
+The CSV files are generated outputs.
+
+They can be recreated by running the script again.
+
+So we do not commit them to Git.
+
+We commit the code that creates them, not the generated files themselves.
