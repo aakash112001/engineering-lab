@@ -1,19 +1,28 @@
+import json
 from pathlib import Path
 
 from jobspy import scrape_jobs
 
 
+CONFIG_PATH = Path("config/search_config.json")
 RAW_OUTPUT_PATH = Path("data/raw/jobs_raw.csv")
 CLEAN_OUTPUT_PATH = Path("data/processed/jobs_clean.csv")
 
 
-def collect_jobs():
+def load_config():
+    with open(CONFIG_PATH, "r") as file:
+        config = json.load(file)
+
+    return config
+
+
+def collect_jobs(config):
     jobs = scrape_jobs(
-        site_name=["indeed"],
-        search_term="Python Developer",
-        location="Dallas, TX",
-        results_wanted=10,
-        country_indeed="USA",
+        site_name=config["site_name"],
+        search_term=config["search_term"],
+        location=config["location"],
+        results_wanted=config["results_wanted"],
+        country_indeed=config["country_indeed"],
     )
 
     return jobs
@@ -46,8 +55,11 @@ def save_clean_jobs(cleaned_jobs):
     cleaned_jobs.to_csv(CLEAN_OUTPUT_PATH, index=False)
 
 
-def print_summary(jobs, cleaned_jobs):
+def print_summary(config, jobs, cleaned_jobs):
     print("Job collection pipeline completed")
+    print(f"Search term: {config['search_term']}")
+    print(f"Location: {config['location']}")
+    print(f"Sites: {config['site_name']}")
     print(f"Raw jobs collected: {len(jobs)}")
     print(f"Clean jobs saved: {len(cleaned_jobs)}")
     print(f"Raw output: {RAW_OUTPUT_PATH}")
@@ -58,14 +70,17 @@ def print_summary(jobs, cleaned_jobs):
 
 
 def main():
-    jobs = collect_jobs()
+    config = load_config()
+
+    jobs = collect_jobs(config)
     save_raw_jobs(jobs)
 
     cleaned_jobs = clean_jobs(jobs)
     save_clean_jobs(cleaned_jobs)
 
-    print_summary(jobs, cleaned_jobs)
+    print_summary(config, jobs, cleaned_jobs)
 
 
 if __name__ == "__main__":
     main()
+
