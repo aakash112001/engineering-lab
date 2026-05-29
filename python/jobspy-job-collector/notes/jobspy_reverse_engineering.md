@@ -135,3 +135,17 @@ They can be recreated by running the script again.
 So we do not commit them to Git.
 
 We commit the code that creates them, not the generated files themselves.
+
+## Milestone 3: Search Configuration File
+
+In Milestone 3, we moved the search settings out of Python code and into a JSON configuration file.
+
+Before this milestone, the search values were hardcoded inside `src/main.py`.
+
+Example:
+
+```python
+search_term="Python Developer"
+location="Dallas, TX"
+results_wanted=10
+
