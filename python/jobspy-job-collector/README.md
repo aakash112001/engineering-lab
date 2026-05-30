@@ -1,6 +1,14 @@
-# JobSpy Job Collector
+# # Job Search Automation Lab
 
-A Python learning project for collecting job postings using JobSpy.
+## Project Identity
+
+This project started as a Python learning exercise using JobSpy, but it is now evolving into a broader job search automation system.
+
+The project name is:
+
+Job Search Automation Lab
+
+The current first module focuses on collecting job postings using JobSpy.
 
 ## Current Goal
 

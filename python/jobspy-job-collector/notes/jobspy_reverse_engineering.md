@@ -1,4 +1,14 @@
-# JobSpy Reverse Engineering Notes
+# Job Search Automation Lab Notes
+
+## Project Identity
+
+This project started as a Python learning exercise using JobSpy, but it is now evolving into a broader job search automation system.
+
+The project name is:
+
+Job Search Automation Lab
+
+The current first module focuses on collecting job postings using JobSpy.
 
 ## Project Goal
 
@@ -148,4 +158,3 @@ Example:
 search_term="Python Developer"
 location="Dallas, TX"
 results_wanted=10
-
