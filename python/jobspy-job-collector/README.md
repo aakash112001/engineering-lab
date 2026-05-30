@@ -1,4 +1,4 @@
-# # Job Search Automation Lab
+# Job Search Automation Lab
 
 ## Project Identity
 
