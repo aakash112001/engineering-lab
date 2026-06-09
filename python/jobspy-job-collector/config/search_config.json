@@ -1,6 +1,10 @@
 {
   "site_name": ["indeed"],
-  "search_term": "Python Developer",
+  "search_terms": [
+    "Python Developer",
+    "Data Engineer",
+    "SQL Developer"
+  ],
   "location": "Dallas, TX",
   "results_wanted": 10,
   "country_indeed": "USA"

@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 
+import pandas as pd
 from jobspy import scrape_jobs
 
 
@@ -16,16 +17,32 @@ def load_config():
     return config
 
 
-def collect_jobs(config):
+def collect_jobs_for_search_term(config, search_term):
     jobs = scrape_jobs(
         site_name=config["site_name"],
-        search_term=config["search_term"],
+        search_term=search_term,
         location=config["location"],
         results_wanted=config["results_wanted"],
         country_indeed=config["country_indeed"],
     )
 
+    jobs["search_term"] = search_term
+
     return jobs
+
+
+def collect_jobs(config):
+    all_jobs = []
+
+    for search_term in config["search_terms"]:
+        print(f"Collecting jobs for search term: {search_term}")
+
+        jobs = collect_jobs_for_search_term(config, search_term)
+        all_jobs.append(jobs)
+
+    combined_jobs = pd.concat(all_jobs, ignore_index=True)
+
+    return combined_jobs
 
 
 def save_raw_jobs(jobs):
@@ -35,6 +52,7 @@ def save_raw_jobs(jobs):
 
 def clean_jobs(jobs):
     useful_columns = [
+        "search_term",
         "site",
         "title",
         "company",
@@ -57,7 +75,7 @@ def save_clean_jobs(cleaned_jobs):
 
 def print_summary(config, jobs, cleaned_jobs):
     print("Job collection pipeline completed")
-    print(f"Search term: {config['search_term']}")
+    print(f"Search terms: {config['search_terms']}")
     print(f"Location: {config['location']}")
     print(f"Sites: {config['site_name']}")
     print(f"Raw jobs collected: {len(jobs)}")
@@ -83,4 +101,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
