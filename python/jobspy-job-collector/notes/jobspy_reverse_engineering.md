@@ -158,7 +158,7 @@ Example:
 search_term="Python Developer"
 location="Dallas, TX"
 results_wanted=10
-
+```
 
 ## Milestone 4: Multi-Search Job Collection
 
@@ -170,3 +170,106 @@ Previously, the config file had one value:
 
 ```json
 "search_term": "Python Developer"
+```
+
+Now, the config file uses a list:
+
+```json
+"search_terms": [
+  "Python Developer",
+  "Data Engineer",
+  "SQL Developer"
+]
+```
+
+This allows the same Python program to collect jobs for multiple roles without changing the source code.
+
+### Why this matters
+
+This is an example of config-driven design.
+
+Instead of hardcoding search terms inside Python, we keep them in a JSON config file. This makes the system easier to modify, reuse, and expand.
+
+In a real production project, business rules, search settings, file paths, API settings, and environment-specific values are often kept outside the main code.
+
+### New Python concepts used
+
+#### 1. Looping through a list
+
+```python
+for search_term in config["search_terms"]:
+```
+
+This loop takes each role from the config list and runs the job collection process one by one.
+
+#### 2. Creating a reusable function for one search
+
+```python
+def collect_jobs_for_search_term(config, search_term):
+```
+
+This function handles one job search at a time. It makes the code easier to understand and reuse.
+
+#### 3. Adding a new column to a DataFrame
+
+```python
+jobs["search_term"] = search_term
+```
+
+This adds a new column to every collected job row. The column tells us which search term produced that job.
+
+This is important because after combining multiple searches, we still need to know where each job came from.
+
+#### 4. Combining multiple DataFrames
+
+```python
+combined_jobs = pd.concat(all_jobs, ignore_index=True)
+```
+
+`pd.concat()` combines multiple DataFrames into one DataFrame.
+
+`ignore_index=True` resets the row numbers so the final combined DataFrame has a clean index.
+
+### New pipeline flow
+
+```text
+Load config
+    ↓
+Read search_terms list
+    ↓
+Loop through each search term
+    ↓
+Collect jobs using JobSpy
+    ↓
+Add search_term column
+    ↓
+Store each result in a list
+    ↓
+Combine all job results with pd.concat()
+    ↓
+Save raw jobs
+    ↓
+Create cleaned jobs
+    ↓
+Save cleaned jobs
+```
+
+### Result
+
+The script successfully collected 30 jobs:
+
+```text
+3 search terms × 10 jobs each = 30 jobs
+```
+
+The cleaned output now includes the `search_term` column, which prepares the project for future filtering, deduplication, analytics, and dashboard features.
+
+### Industry terms connected to this milestone
+
+- Config-driven design
+- Batch collection
+- Iterative processing
+- DataFrame concatenation
+- Metadata tagging
+- Data pipeline expansion
+
