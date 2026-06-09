@@ -158,3 +158,15 @@ Example:
 search_term="Python Developer"
 location="Dallas, TX"
 results_wanted=10
+
+
+## Milestone 4: Multi-Search Job Collection
+
+### What we built
+
+We upgraded the job collection pipeline from a single search term to multiple search terms.
+
+Previously, the config file had one value:
+
+```json
+"search_term": "Python Developer"
