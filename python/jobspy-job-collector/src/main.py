@@ -49,6 +49,10 @@ def save_raw_jobs(jobs):
     RAW_OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     jobs.to_csv(RAW_OUTPUT_PATH, index=False)
 
+def deduplicate_jobs(jobs):
+    deduplicated_jobs = jobs.drop_duplicates(subset=["job_url"]).copy()
+
+    return deduplicated_jobs
 
 def clean_jobs(jobs):
     useful_columns = [
@@ -73,12 +77,13 @@ def save_clean_jobs(cleaned_jobs):
     cleaned_jobs.to_csv(CLEAN_OUTPUT_PATH, index=False)
 
 
-def print_summary(config, jobs, cleaned_jobs):
+def print_summary(config, jobs, deduplicated_jobs, cleaned_jobs):
     print("Job collection pipeline completed")
     print(f"Search terms: {config['search_terms']}")
     print(f"Location: {config['location']}")
     print(f"Sites: {config['site_name']}")
     print(f"Raw jobs collected: {len(jobs)}")
+    print(f"Unique jobs after deduplication: {len(deduplicated_jobs)}")
     print(f"Clean jobs saved: {len(cleaned_jobs)}")
     print(f"Raw output: {RAW_OUTPUT_PATH}")
     print(f"Clean output: {CLEAN_OUTPUT_PATH}")
@@ -93,10 +98,12 @@ def main():
     jobs = collect_jobs(config)
     save_raw_jobs(jobs)
 
-    cleaned_jobs = clean_jobs(jobs)
+    deduplicated_jobs = deduplicate_jobs(jobs)
+
+    cleaned_jobs = clean_jobs(deduplicated_jobs)
     save_clean_jobs(cleaned_jobs)
 
-    print_summary(config, jobs, cleaned_jobs)
+    print_summary(config, jobs, deduplicated_jobs, cleaned_jobs)
 
 
 if __name__ == "__main__":
