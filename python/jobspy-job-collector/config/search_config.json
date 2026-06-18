@@ -7,5 +7,6 @@
   ],
   "location": "Dallas, TX",
   "results_wanted": 10,
-  "country_indeed": "USA"
+  "country_indeed": "USA",
+  "posted_within_days": 7
 }

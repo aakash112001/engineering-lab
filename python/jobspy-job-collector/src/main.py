@@ -54,6 +54,17 @@ def deduplicate_jobs(jobs):
 
     return deduplicated_jobs
 
+def filter_recent_jobs(jobs, posted_within_days):
+    jobs = jobs.copy()
+
+    jobs["date_posted"] = pd.to_datetime(jobs["date_posted"], errors="coerce")
+
+    cutoff_date = pd.Timestamp.today().normalize() - pd.Timedelta(days=posted_within_days)
+
+    recent_jobs = jobs[jobs["date_posted"] >= cutoff_date].copy()
+
+    return recent_jobs
+
 def clean_jobs(jobs):
     useful_columns = [
         "search_term",
@@ -77,13 +88,15 @@ def save_clean_jobs(cleaned_jobs):
     cleaned_jobs.to_csv(CLEAN_OUTPUT_PATH, index=False)
 
 
-def print_summary(config, jobs, deduplicated_jobs, cleaned_jobs):
+def print_summary(config, jobs, deduplicated_jobs, recent_jobs, cleaned_jobs):
     print("Job collection pipeline completed")
     print(f"Search terms: {config['search_terms']}")
     print(f"Location: {config['location']}")
     print(f"Sites: {config['site_name']}")
     print(f"Raw jobs collected: {len(jobs)}")
     print(f"Unique jobs after deduplication: {len(deduplicated_jobs)}")
+    print(f"Recent jobs after date filter: {len(recent_jobs)}")
+    print(f"Posted within days: {config['posted_within_days']}")
     print(f"Clean jobs saved: {len(cleaned_jobs)}")
     print(f"Raw output: {RAW_OUTPUT_PATH}")
     print(f"Clean output: {CLEAN_OUTPUT_PATH}")
@@ -100,10 +113,14 @@ def main():
 
     deduplicated_jobs = deduplicate_jobs(jobs)
 
-    cleaned_jobs = clean_jobs(deduplicated_jobs)
-    save_clean_jobs(cleaned_jobs)
+    recent_jobs = filter_recent_jobs(
+    deduplicated_jobs,
+    config["posted_within_days"],
+    )
 
-    print_summary(config, jobs, deduplicated_jobs, cleaned_jobs)
+    cleaned_jobs = clean_jobs(recent_jobs)
+
+    print_summary(config, jobs, deduplicated_jobs, recent_jobs, cleaned_jobs)
 
 
 if __name__ == "__main__":
