@@ -418,3 +418,146 @@ Even though no rows were removed, the pipeline now has protection against duplic
 - Auditability
 - Reprocessing
 - Data cleaning
+
+## Milestone 6: Date-Based Filtering
+
+### What we built
+
+We added a date filtering step to the job collection pipeline.
+
+The goal is to keep only recent job postings.
+
+We added a new config value:
+
+```json
+"posted_within_days": 7
+```
+
+This means the pipeline should keep only jobs posted within the last 7 days.
+
+### Why this matters
+
+A job search automation system should prioritize fresh job postings.
+
+Older job postings may already be filled, inactive, or less useful.
+
+By filtering jobs based on `date_posted`, the clean output becomes more useful for real job search decisions.
+
+### New pipeline flow
+
+Before this milestone, the pipeline looked like this:
+
+```text
+Collect jobs
+    ↓
+Save raw jobs
+    ↓
+Deduplicate jobs
+    ↓
+Clean jobs
+    ↓
+Save clean jobs
+```
+
+After this milestone, the pipeline looks like this:
+
+```text
+Collect jobs
+    ↓
+Save raw jobs
+    ↓
+Deduplicate jobs
+    ↓
+Filter recent jobs
+    ↓
+Clean jobs
+    ↓
+Save clean jobs
+```
+
+### New function added
+
+```python
+def filter_recent_jobs(jobs, posted_within_days):
+    jobs = jobs.copy()
+
+    jobs["date_posted"] = pd.to_datetime(jobs["date_posted"], errors="coerce")
+
+    cutoff_date = pd.Timestamp.today().normalize() - pd.Timedelta(days=posted_within_days)
+
+    recent_jobs = jobs[jobs["date_posted"] >= cutoff_date].copy()
+
+    return recent_jobs
+```
+
+### How the function works
+
+#### 1. Create a safe copy
+
+```python
+jobs = jobs.copy()
+```
+
+This avoids changing the original DataFrame directly.
+
+#### 2. Convert `date_posted` into datetime format
+
+```python
+jobs["date_posted"] = pd.to_datetime(jobs["date_posted"], errors="coerce")
+```
+
+JobSpy returns `date_posted` values, but we need Pandas to treat them as actual dates before we can compare them.
+
+`errors="coerce"` means invalid date values become `NaT`.
+
+`NaT` means “Not a Time.” It is similar to `NaN`, but for missing or invalid dates.
+
+#### 3. Calculate the cutoff date
+
+```python
+cutoff_date = pd.Timestamp.today().normalize() - pd.Timedelta(days=posted_within_days)
+```
+
+This calculates the oldest date we want to keep.
+
+For example, if today is June 18 and `posted_within_days` is 7, the cutoff date is around June 11.
+
+#### 4. Keep only recent rows
+
+```python
+recent_jobs = jobs[jobs["date_posted"] >= cutoff_date].copy()
+```
+
+This keeps only jobs where `date_posted` is greater than or equal to the cutoff date.
+
+### Result
+
+The latest run produced:
+
+```text
+Raw jobs collected: 30
+Unique jobs after deduplication: 28
+Recent jobs after date filter: 23
+Posted within days: 7
+Clean jobs saved: 23
+```
+
+This means:
+
+```text
+30 jobs were collected from JobSpy.
+2 duplicate jobs were removed.
+5 older jobs were removed by the date filter.
+23 recent unique jobs were saved to the clean output.
+```
+
+### Industry terms connected to this milestone
+
+- Date filtering
+- Freshness filter
+- Data quality rule
+- Datetime parsing
+- Cutoff date
+- Row filtering
+- Processed layer
+- Config-driven filtering
