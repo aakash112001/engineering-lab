@@ -273,3 +273,148 @@ The cleaned output now includes the `search_term` column, which prepares the pro
 - Metadata tagging
 - Data pipeline expansion
 
+## Milestone 5: Deduplicate Jobs by URL
+
+### What we built
+
+We added a deduplication step to the job collection pipeline.
+
+After collecting jobs from multiple search terms, the same job can appear more than once. For example, one job posting may appear under both `Python Developer` and `Data Engineer`.
+
+To handle this, we added a new function:
+
+```python
+def deduplicate_jobs(jobs):
+    deduplicated_jobs = jobs.drop_duplicates(subset=["job_url"]).copy()
+
+    return deduplicated_jobs
+```
+
+### Why this matters
+
+This is a data quality improvement.
+
+When a pipeline collects data from multiple searches or multiple sources, duplicate records are common. If duplicates are not removed, our final dataset can become misleading.
+
+For example:
+
+```text
+Raw jobs collected: 30
+Clean jobs saved: 30
+```
+
+may look correct, but if 5 of those jobs are duplicates, then we only have 25 unique jobs.
+
+Deduplication helps make the cleaned output more accurate.
+
+### Why we use job_url
+
+We used `job_url` as the deduplication key.
+
+```python
+jobs.drop_duplicates(subset=["job_url"])
+```
+
+This means:
+
+```text
+If two or more rows have the same job_url, treat them as the same job posting.
+```
+
+A job URL is usually a strong identifier because each posting normally has a unique link.
+
+### Why raw output is saved before deduplication
+
+We save the raw file before removing duplicates:
+
+```text
+Collect jobs
+    ↓
+Save raw jobs
+    ↓
+Deduplicate jobs
+    ↓
+Clean jobs
+    ↓
+Save clean jobs
+```
+
+This is useful because raw data shows exactly what came from the source before our pipeline changed anything.
+
+In production data pipelines, keeping raw data is important for debugging, auditing, and reprocessing.
+
+### Why clean output is saved after deduplication
+
+The clean output is meant to be useful for analysis.
+
+So we remove duplicate jobs before creating the clean file.
+
+This means:
+
+```text
+raw/jobs_raw.csv = original collected data
+processed/jobs_clean.csv = cleaned and deduplicated data
+```
+
+### New Pandas concept used
+
+#### drop_duplicates()
+
+```python
+jobs.drop_duplicates(subset=["job_url"])
+```
+
+`drop_duplicates()` removes repeated rows.
+
+The `subset` parameter tells Pandas which column to use when checking duplicates.
+
+In our case:
+
+```python
+subset=["job_url"]
+```
+
+means Pandas only checks the `job_url` column.
+
+### New pipeline flow
+
+```text
+Load config
+    ↓
+Collect jobs for multiple search terms
+    ↓
+Save raw collected jobs
+    ↓
+Remove duplicate jobs using job_url
+    ↓
+Select useful columns
+    ↓
+Save cleaned jobs
+    ↓
+Print summary with raw, unique, and clean job counts
+```
+
+### Result
+
+In the latest run, the pipeline collected 30 jobs:
+
+```text
+Raw jobs collected: 30
+Unique jobs after deduplication: 30
+Clean jobs saved: 30
+```
+
+This means no duplicate job URLs were found in that run.
+
+Even though no rows were removed, the pipeline now has protection against duplicates in future runs.
+
+### Industry terms connected to this milestone
+
+- Deduplication
+- Data quality rule
+- Unique identifier
+- Raw layer
+- Processed layer
+- Auditability
+- Reprocessing
+- Data cleaning
